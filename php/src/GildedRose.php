@@ -4,64 +4,48 @@ declare(strict_types=1);
 
 namespace GildedRose;
 
+use GildedRose\UpdateStrategies\StandardItemQualityUpdater;
+
 final class GildedRose
 {
+    /**
+     * @var array<QualityUpdater>
+     */
+    private array $qualityUpdaterStrategies;
+
+    private StandardItemQualityUpdater $standardItemQualityUpdaterStrategy;
+
     /**
      * @param Item[] $items
      */
     public function __construct(
-        private array $items
+        private array $items,
+        QualityUpdater ...$qualityUpdaterStrategies,
     ) {
+        $this->qualityUpdaterStrategies = $qualityUpdaterStrategies;
+        $this->standardItemQualityUpdaterStrategy = new StandardItemQualityUpdater();
     }
 
     public function updateQuality(): void
     {
         foreach ($this->items as $item) {
-            if ($item->name != 'Aged Brie' and $item->name != 'Backstage passes to a TAFKAL80ETC concert') {
-                if ($item->quality > 0) {
-                    if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                        $item->quality = $item->quality - 1;
-                    }
-                }
-            } else {
-                if ($item->quality < 50) {
-                    $item->quality = $item->quality + 1;
-                    if ($item->name == 'Backstage passes to a TAFKAL80ETC concert') {
-                        if ($item->sellIn < 11) {
-                            if ($item->quality < 50) {
-                                $item->quality = $item->quality + 1;
-                            }
-                        }
-                        if ($item->sellIn < 6) {
-                            if ($item->quality < 50) {
-                                $item->quality = $item->quality + 1;
-                            }
-                        }
-                    }
-                }
-            }
+            $this->updateItemQuality($item);
+        }
+    }
 
-            if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                $item->sellIn = $item->sellIn - 1;
-            }
+    private function updateItemQuality(Item $item): void
+    {
+        $this->findUpdateStrategy($item)->update($item);
+    }
 
-            if ($item->sellIn < 0) {
-                if ($item->name != 'Aged Brie') {
-                    if ($item->name != 'Backstage passes to a TAFKAL80ETC concert') {
-                        if ($item->quality > 0) {
-                            if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                                $item->quality = $item->quality - 1;
-                            }
-                        }
-                    } else {
-                        $item->quality = $item->quality - $item->quality;
-                    }
-                } else {
-                    if ($item->quality < 50) {
-                        $item->quality = $item->quality + 1;
-                    }
-                }
+    private function findUpdateStrategy(Item $item): QualityUpdater
+    {
+        foreach ($this->qualityUpdaterStrategies as $qualityUpdaterStrategy) {
+            if ($qualityUpdaterStrategy->canUpdate($item)) {
+                return $qualityUpdaterStrategy;
             }
         }
+
+        return $this->standardItemQualityUpdaterStrategy;
     }
 }
