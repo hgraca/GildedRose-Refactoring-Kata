@@ -47,19 +47,16 @@ final class GildedRose
         }
 
         if ($this->itemDetector->isAgedBrie($item)) {
-            $item->quality = min($item->quality + 1, 50);
-        } else {
-            $item->quality = max($item->quality - 1, 0);
+            $this->updateQualityOfAgedBrie($item);
+            return;
         }
+
+        $item->quality = max($item->quality - 1, 0);
 
         $this->updateSellIn($item);
 
         if ($item->sellIn < 0) {
-            if ($this->itemDetector->isAgedBrie($item)) {
-                $item->quality = min($item->quality + 1, 50);
-            } else {
-                $item->quality = max($item->quality - 1, 0);
-            }
+            $item->quality = max($item->quality - 1, 0);
         }
     }
 
@@ -95,5 +92,16 @@ final class GildedRose
     private function updateQualityOfSulfuras(Item $item): void
     {
         $this->updateSellIn($item);
+    }
+
+    private function updateQualityOfAgedBrie(Item $item): void
+    {
+        $maxQuality = 50;
+
+        $item->quality = min($item->quality + 1, $maxQuality);
+        $this->updateSellIn($item);
+        if ($item->sellIn < 0) {
+            $item->quality = min($item->quality + 1, $maxQuality);
+        }
     }
 }
