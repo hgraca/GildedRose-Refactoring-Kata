@@ -9,6 +9,7 @@ use GildedRose\GildedRose;
 use GildedRose\Item;
 use GildedRose\UpdateStrategies\AgedBrieQualityUpdater;
 use GildedRose\UpdateStrategies\BackstagePassesToConcertQualityUpdater;
+use GildedRose\UpdateStrategies\ConjuredQualityUpdater;
 use GildedRose\UpdateStrategies\SulfurasQualityUpdater;
 use PHPUnit\Framework\TestCase;
 
@@ -31,6 +32,7 @@ class ApprovalTest extends TestCase
             new BackstagePassesToConcertQualityUpdater(),
             new AgedBrieQualityUpdater(),
             new SulfurasQualityUpdater(),
+            new ConjuredQualityUpdater(),
         );
         $app->updateQuality();
 

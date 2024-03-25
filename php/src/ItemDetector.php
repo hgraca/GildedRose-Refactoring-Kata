@@ -20,4 +20,9 @@ final class ItemDetector
     {
         return $item->name === 'Sulfuras, Hand of Ragnaros';
     }
+
+    public function isConjured(Item $item): bool
+    {
+        return $item->name === 'Conjured Mana Cake';
+    }
 }

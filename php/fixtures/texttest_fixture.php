@@ -8,6 +8,7 @@ use GildedRose\GildedRose;
 use GildedRose\Item;
 use GildedRose\UpdateStrategies\AgedBrieQualityUpdater;
 use GildedRose\UpdateStrategies\BackstagePassesToConcertQualityUpdater;
+use GildedRose\UpdateStrategies\ConjuredQualityUpdater;
 use GildedRose\UpdateStrategies\SulfurasQualityUpdater;
 
 echo 'OMGHAI!' . PHP_EOL;
@@ -30,6 +31,7 @@ $app = new GildedRose(
     new BackstagePassesToConcertQualityUpdater(),
     new AgedBrieQualityUpdater(),
     new SulfurasQualityUpdater(),
+    new ConjuredQualityUpdater(),
 );
 
 $days = 2;
