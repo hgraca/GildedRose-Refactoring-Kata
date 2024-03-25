@@ -51,13 +51,7 @@ final class GildedRose
             return;
         }
 
-        $item->quality = max($item->quality - 1, 0);
-
-        $this->updateSellIn($item);
-
-        if ($item->sellIn < 0) {
-            $item->quality = max($item->quality - 1, 0);
-        }
+        $this->updateQualityOfStandardItem($item);
     }
 
     private function updateQualityOfBackstagePassesToConcert(Item $item): void
@@ -102,6 +96,19 @@ final class GildedRose
         $this->updateSellIn($item);
         if ($item->sellIn < 0) {
             $item->quality = min($item->quality + 1, $maxQuality);
+        }
+    }
+
+    private function updateQualityOfStandardItem(Item $item): void
+    {
+        $minQuality = 0;
+
+        $item->quality = max($item->quality - 1, $minQuality);
+
+        $this->updateSellIn($item);
+
+        if ($item->sellIn < 0) {
+            $item->quality = max($item->quality - 1, $minQuality);
         }
     }
 }
