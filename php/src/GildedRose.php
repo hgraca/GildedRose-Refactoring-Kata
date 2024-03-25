@@ -42,9 +42,7 @@ final class GildedRose
                 }
             }
 
-            if (!$this->itemDetector->isSulfuras($item)) {
-                $item->sellIn = $item->sellIn - 1;
-            }
+            $this->updateSellIn($item);
 
             if ($item->sellIn < 0) {
                 if (!$this->itemDetector->isAgedBrie($item)) {
@@ -63,6 +61,13 @@ final class GildedRose
                     }
                 }
             }
+        }
+    }
+
+    private function updateSellIn(Item $item): void
+    {
+        if (! $this->itemDetector->isSulfuras($item)) {
+            $item->sellIn = $item->sellIn - 1;
         }
     }
 }
