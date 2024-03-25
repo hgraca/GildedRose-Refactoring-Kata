@@ -4,20 +4,26 @@ declare(strict_types=1);
 
 namespace GildedRose;
 
-use LogicException;
-
-use function max;
-use function min;
+use GildedRose\UpdateStrategies\StandardItemQualityUpdater;
 
 final class GildedRose
 {
+    /**
+     * @var array<QualityUpdater>
+     */
+    private array $qualityUpdaterStrategies;
+
+    private StandardItemQualityUpdater $standardItemQualityUpdaterStrategy;
+
     /**
      * @param Item[] $items
      */
     public function __construct(
         private array $items,
-        private ItemDetector $itemDetector = new ItemDetector(),
+        QualityUpdater ...$qualityUpdaterStrategies,
     ) {
+        $this->qualityUpdaterStrategies = $qualityUpdaterStrategies;
+        $this->standardItemQualityUpdaterStrategy = new StandardItemQualityUpdater();
     }
 
     public function updateQuality(): void
@@ -27,88 +33,19 @@ final class GildedRose
         }
     }
 
-    private function updateSellIn(Item $item): void
-    {
-        if (! $this->itemDetector->isSulfuras($item)) {
-            $item->sellIn = $item->sellIn - 1;
-        }
-    }
-
     private function updateItemQuality(Item $item): void
     {
-        if ($this->itemDetector->isBackstagePassesToConcert($item)) {
-            $this->updateQualityOfBackstagePassesToConcert($item);
-            return;
-        }
-
-        if ($this->itemDetector->isSulfuras($item)) {
-            $this->updateQualityOfSulfuras($item);
-            return;
-        }
-
-        if ($this->itemDetector->isAgedBrie($item)) {
-            $this->updateQualityOfAgedBrie($item);
-            return;
-        }
-
-        $this->updateQualityOfStandardItem($item);
+        $this->findUpdateStrategy($item)->update($item);
     }
 
-    private function updateQualityOfBackstagePassesToConcert(Item $item): void
+    private function findUpdateStrategy(Item $item): QualityUpdater
     {
-        $maxQuality = 50;
-
-        if (! $this->itemDetector->isBackstagePassesToConcert($item)) {
-            throw new LogicException(
-                'Non BackstagePassesToConcert provided to BackstagePassesToConcert quality updater'
-            );
+        foreach ($this->qualityUpdaterStrategies as $qualityUpdaterStrategy) {
+            if ($qualityUpdaterStrategy->canUpdate($item)) {
+                return $qualityUpdaterStrategy;
+            }
         }
 
-        $qualityIncrease = 1;
-        if ($item->sellIn < 11) {
-            $qualityIncrease++;
-        }
-        if ($item->sellIn < 6) {
-            $qualityIncrease++;
-        }
-
-        $item->quality = $item->quality + $qualityIncrease;
-
-        $item->quality = $item->quality > $maxQuality ? $maxQuality : $item->quality;
-
-        $this->updateSellIn($item);
-
-        if ($item->sellIn < 0) {
-            $item->quality = 0;
-        }
-    }
-
-    private function updateQualityOfSulfuras(Item $item): void
-    {
-        $this->updateSellIn($item);
-    }
-
-    private function updateQualityOfAgedBrie(Item $item): void
-    {
-        $maxQuality = 50;
-
-        $item->quality = min($item->quality + 1, $maxQuality);
-        $this->updateSellIn($item);
-        if ($item->sellIn < 0) {
-            $item->quality = min($item->quality + 1, $maxQuality);
-        }
-    }
-
-    private function updateQualityOfStandardItem(Item $item): void
-    {
-        $minQuality = 0;
-
-        $item->quality = max($item->quality - 1, $minQuality);
-
-        $this->updateSellIn($item);
-
-        if ($item->sellIn < 0) {
-            $item->quality = max($item->quality - 1, $minQuality);
-        }
+        return $this->standardItemQualityUpdaterStrategy;
     }
 }

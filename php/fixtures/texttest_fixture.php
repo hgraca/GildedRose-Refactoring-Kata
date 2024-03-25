@@ -6,6 +6,9 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use GildedRose\GildedRose;
 use GildedRose\Item;
+use GildedRose\UpdateStrategies\AgedBrieQualityUpdater;
+use GildedRose\UpdateStrategies\BackstagePassesToConcertQualityUpdater;
+use GildedRose\UpdateStrategies\SulfurasQualityUpdater;
 
 echo 'OMGHAI!' . PHP_EOL;
 
@@ -22,7 +25,12 @@ $items = [
     new Item('Conjured Mana Cake', 3, 6),
 ];
 
-$app = new GildedRose($items);
+$app = new GildedRose(
+    $items,
+    new BackstagePassesToConcertQualityUpdater(),
+    new AgedBrieQualityUpdater(),
+    new SulfurasQualityUpdater(),
+);
 
 $days = 2;
 if ((is_countable($argv) ? count($argv) : 0) > 1) {

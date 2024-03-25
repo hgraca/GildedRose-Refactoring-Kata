@@ -7,6 +7,9 @@ namespace Tests;
 use ApprovalTests\Approvals;
 use GildedRose\GildedRose;
 use GildedRose\Item;
+use GildedRose\UpdateStrategies\AgedBrieQualityUpdater;
+use GildedRose\UpdateStrategies\BackstagePassesToConcertQualityUpdater;
+use GildedRose\UpdateStrategies\SulfurasQualityUpdater;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -23,7 +26,12 @@ class ApprovalTest extends TestCase
     public function testFoo(): void
     {
         $items = [new Item('foo', 0, 0)];
-        $app = new GildedRose($items);
+        $app = new GildedRose(
+            $items,
+            new BackstagePassesToConcertQualityUpdater(),
+            new AgedBrieQualityUpdater(),
+            new SulfurasQualityUpdater(),
+        );
         $app->updateQuality();
 
         Approvals::verifyList($items);
