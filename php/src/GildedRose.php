@@ -6,6 +6,9 @@ namespace GildedRose;
 
 use LogicException;
 
+use function max;
+use function min;
+
 final class GildedRose
 {
     /**
@@ -37,31 +40,25 @@ final class GildedRose
             $this->updateQualityOfBackstagePassesToConcert($item);
             return;
         }
-        if (! $this->itemDetector->isAgedBrie($item)) {
-            if ($item->quality > 0) {
-                if (! $this->itemDetector->isSulfuras($item)) {
-                    $item->quality = $item->quality - 1;
-                }
-            }
+
+        if ($this->itemDetector->isSulfuras($item)) {
+            // no change
+        } elseif ($this->itemDetector->isAgedBrie($item)) {
+            $item->quality = min($item->quality + 1, 50);
         } else {
-            if ($item->quality < 50) {
-                $item->quality = $item->quality + 1;
-            }
+            $item->quality = max($item->quality - 1, 0);
         }
 
         $this->updateSellIn($item);
 
         if ($item->sellIn < 0) {
-            if (! $this->itemDetector->isAgedBrie($item)) {
-                if ($item->quality > 0) {
-                    if (! $this->itemDetector->isSulfuras($item)) {
-                        $item->quality = $item->quality - 1;
-                    }
-                }
+
+            if ($this->itemDetector->isSulfuras($item)) {
+                // no change
+            } elseif ($this->itemDetector->isAgedBrie($item)) {
+                $item->quality = min($item->quality + 1, 50);
             } else {
-                if ($item->quality < 50) {
-                    $item->quality = $item->quality + 1;
-                }
+                $item->quality = max($item->quality - 1, 0);
             }
         }
     }
